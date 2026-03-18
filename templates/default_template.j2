@@ -1,0 +1,16 @@
+{% for dep in depends_on %}
+from {{ dep.replace('.py', '').replace('/', '.') }} import *
+{% endfor %}
+
+# Description: {{ description }}
+
+{% for func in functions %}
+def {{ func.name }}({{ func.params }}) -> {{ func.return_type }}:
+    """
+    AI TODO: {{ func.name }} の実装
+    """
+    # [AI_START:{{ func.name }}]
+    pass
+    # [AI_END:{{ func.name }}]
+
+{% endfor %}

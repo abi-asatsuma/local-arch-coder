@@ -1,0 +1,21 @@
+{
+  "project_name": "greeting_app",
+  "modules": [
+    {
+      "path": "core/logic.py",
+      "description": "名前を受け取って挨拶文を生成するロジック",
+      "functions": [
+        {"name": "make_greeting", "params": "name: str", "return_type": "str"}
+      ],
+      "depends_on": []
+    },
+    {
+      "path": "main.py",
+      "description": "アプリの実行エントリポイント",
+      "functions": [
+        {"name": "run_app", "params": "", "return_type": "None"}
+      ],
+      "depends_on": ["core/logic.py"]
+    }
+  ]
+}
