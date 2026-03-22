@@ -5,7 +5,7 @@ from jinja2 import Environment, FileSystemLoader
 def generate_scaffold(blueprint_name):
     # 1. パスの設定
     base_dir = os.path.dirname(__file__)
-    blueprint_path = os.path.join(base_dir, 'blueprint', f'{blueprint_name}.json')
+    blueprint_path = os.path.join(base_dir, 'blueprints', f'example.json')
     template_dir = os.path.join(base_dir, 'templates')
     output_base_dir = os.path.join(base_dir, 'outputs')
 
@@ -34,6 +34,7 @@ def generate_scaffold(blueprint_name):
         # テンプレートに渡すデータの整理
         render_data = {
             "description": module.get("description", ""),
+            "module_path": file_relative_path,
             "functions": module.get("functions", []),
             "params": module.get("params", []),
             "depends_on": module.get("depends_on", [])

@@ -5,12 +5,12 @@ from {{ dep.replace('.py', '').replace('/', '.') }} import *
 # Description: {{ description }}
 
 {% for func in functions %}
-def {{ func.name }}({{ func.params }}) -> {{ func.return_type }}:
-    """
-    AI TODO: {{ func.name }} の実装
-    """
-    # [AI_START:{{ func.name }}]
-    pass
-    # [AI_END:{{ func.name }}]
+# [AI_START:{{ func.name }}]
+# AI will implement the full "def {{ func.name }}..." here.
+# [AI_END:{{ func.name }}]
 
+{% if module_path == "main.py" %}
+if __name__ == "__main__":
+    {{ func.name }}()
+{% endif %}
 {% endfor %}

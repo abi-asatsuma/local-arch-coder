@@ -1,0 +1,34 @@
+{
+  "project_name": "greeting_app",
+  "goal": "ユーザーの入力を安全に処理して挨拶を表示するCLIアプリ",
+  "requirements": [
+    "名前から記号を排除するクリーンアップ機能",
+    "実行ログを標準出力ではなく、loggingモジュールで管理する",
+    "最終的な挨拶は必ず print でコンソールに表示する"
+  ],
+  "modules": [
+    {
+      "path": "core/logic.py",
+      "description": "データ加工の純粋なロジックを担当",
+      "functions": [
+        {
+          "name": "make_greeting",
+          "params": "name: str",
+          "description": "名前を受け取り、記号を消してから 'Hello, [name]!' を返す"
+        }
+      ]
+    },
+    {
+      "path": "main.py",
+      "description": "アプリの実行エントリーポイント",
+      "depends_on": ["core/logic.py"],
+      "functions": [
+        {
+          "name": "run_app",
+          "params": "",
+          "description": "make_greetingを呼び出し、結果をコンソールに表示（print）する"
+        }
+      ]
+    }
+  ]
+}

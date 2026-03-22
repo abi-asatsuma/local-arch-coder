@@ -1,0 +1,12 @@
+from core.logic import *
+
+# Description: {{ module_description }}
+
+# [AI_START:{{ func.name }}]
+# AI will write the full function here
+# [AI_END:{{ func.name }}]
+
+{% if func.is_entrypoint %}
+if __name__ == "__main__":
+    {{ func.name }}()
+{% endif %}

@@ -1,26 +1,22 @@
+import textwrap
+
 from llm import call_local_llm
 import re
+from test_code import extract_function_info
 
 def inject_code_to_file(file_path, func_name, raw_llm_response):
-    # ステップ1: 余計なチャットやバッククォートを消す
     pure_code = extract_pure_code(raw_llm_response)
-    
-    # ステップ2: インデントを整える
-    final_code = adjust_indent(pure_code)
+    final_code = adjust_indent(pure_code, indent_level=0) # 0マスで整列
 
-    # ステップ3: 書き込み（とりあえず今は追記モード 'a' のままでもOK）
     with open(file_path, 'r', encoding='utf-8') as f:
-        old_content = f.read()
+        content = f.read()
 
-    target_placeholder = f"# [AI_START:{func_name}]\n    pass\n    # [AI_END:{func_name}]"
+    # タグの間を、AIが書いた「def ...」から始まるコードで完全に置き換える
+    pattern = rf"(# \[AI_START:{func_name}\]).*?(# \[AI_END:{func_name}\])"
+    replacement = rf"\1\n{final_code}\n\2"
     
-    # 3. 新しい中身（AIコード入り）を作る
-    new_implementation = f"# [AI_START:{func_name}]\n{final_code}\n    # [AI_END:{func_name}]"
+    new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
     
-    # 4. 中身を入れ替える
-    new_content = old_content.replace(target_placeholder, new_implementation)
-
-    # 5. 上書き保存する
     with open(file_path, 'w', encoding='utf-8') as f:
         f.write(new_content)
 
@@ -38,25 +34,41 @@ def extract_pure_code(raw_text):
     # ※LLMがバッククォートを忘れた時用の保険
     return raw_text.strip()
 
-def adjust_indent(code_text, indent_level=4):
-    spaces = " " * indent_level
-    # 各行の先頭にスペースを追加する
-    lines = code_text.splitlines()
-    indented_lines = [f"{spaces}{line}" for line in lines]
-    
-    return "\n".join(indented_lines)
+# adjust_indent 内
+def adjust_indent(code_text, indent_level=0): # 0にする
+    if not code_text.strip():
+        return "pass"
+    # AIがつけてきた余計な外側の空白だけを消し、構造を維持して左端に寄せる
+    return textwrap.dedent(code_text).strip()
 
 def generate_codes(project_name, blueprint):
-
     for module in blueprint['modules']:
         file_path = f"outputs/{project_name}/{module['path']}"
         
+        # --- 1. ここで「カンニングペーパー」を準備 ---
+        context_info = ""
+        if 'depends_on' in module:
+            for dep_file in module['depends_on']:
+                dep_path = f"outputs/{project_name}/{dep_file}"
+                # 前のステップで作った AST解析関数を呼び出す
+                funcs = extract_function_info(dep_path) 
+                filtered_funcs = [f for f in funcs if not f.startswith(func['name'])]
+                if filtered_funcs:
+                        context_info += f"\nFunctions available in '{dep_file}': {', '.join(filtered_funcs)}"
+
         for func in module['functions']:
-            # ここで呼び出す！
             print(f"🛠️ Implementing {func['name']}...")
+            current_module_path = module['path']
             
-            # 2. LLMを呼び出してコードを受け取る
-            generated_code = call_local_llm(func['name'], func['params'], module['description'], blueprint)
+            # --- 2. LLMに「カンニングペーパー(context_info)」も渡す！ ---
+            generated_code = call_local_llm(
+                func['name'], 
+                func['params'], 
+                module['description'], 
+                blueprint,
+                context_info,
+                current_module_path,
+                requirements=blueprint.get('requirements', [])
+            )
             
-            # 3. 生成されたコードをファイルに書き込む
             inject_code_to_file(file_path, func['name'], generated_code)

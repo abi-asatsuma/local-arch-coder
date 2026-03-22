@@ -1,16 +1,25 @@
-# main.py (エージェントの完成形)
+import json
+import sys
 from base import generate_scaffold
 from generate_codes import generate_codes
-import json
 
-def run_agent(blueprint_name):
-    # 1. 足場を作る
-    generate_scaffold(blueprint_name)
+def run_agent(blueprint_file):
     
-    # 2. 設計図を読み込み直してAI実装
-    with open(f'blueprint/{blueprint_name}.json', 'r') as f:
+    # blueprints/ フォルダから指定されたファイルを読み込む
+    path = f"blueprints/{blueprint_file}.json"
+    with open(path, 'r', encoding='utf-8') as f:
+        blueprint = json.load(f)
+    
+    # プロジェクト構造の生成
+    generate_scaffold(blueprint['project_name'])
+    
+    print(f"Project started: {blueprint['project_name']}")
+    
+    with open(path, 'r', encoding='utf-8') as f:
         blueprint = json.load(f)
     generate_codes(blueprint['project_name'], blueprint)
 
 if __name__ == "__main__":
-    run_agent('example')
+    # 例: python main.py greeting_app
+    target = sys.argv[1] if len(sys.argv) > 1 else 'example'
+    run_agent(target)
