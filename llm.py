@@ -13,7 +13,6 @@ def call_local_llm(func_name, params, description, blueprint, context_info, curr
 
     
     # 3. すべての変数を注入
-    # ※ params が空なら "no arguments" と書くとAIが迷いません
     prompt = template.format(
         project_name=blueprint.get('project_name', 'Unknown'),
         project_goal=blueprint.get('goal', 'No goal specified.'),

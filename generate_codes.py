@@ -23,18 +23,17 @@ def inject_code_to_file(file_path, func_name, raw_llm_response):
     print(f"  ✨ Clean code injected into {func_name}")
 
 def extract_pure_code(raw_text):
-    # 正規表現で ```python (改行) [中身] (改行) ``` を探す
-    # (.*?) は最小一致、re.DOTALL は改行をまたいで検索するフラグ
-    match = re.search(r'```python\n(.*?)\n```', raw_text, re.DOTALL)
+    # python部分は大文字小文字不問、前後の空白も許容
+    match = re.search(r'```(?:python|Python)?\s*\n(.*?)\n\s*```', raw_text, re.DOTALL)
     
     if match:
         return match.group(1).strip()
     
-    # もしバッククォートがなければ、そのまま（または全体）を返す
-    # ※LLMがバッククォートを忘れた時用の保険
-    return raw_text.strip()
-
-# adjust_indent 内
+    # バッククォートが残っている場合は強制除去
+    cleaned = re.sub(r'```(?:python|Python)?', '', raw_text)
+    return cleaned.strip()
+    
+    # adjust_indent 内
 def adjust_indent(code_text, indent_level=0): # 0にする
     if not code_text.strip():
         return "pass"
